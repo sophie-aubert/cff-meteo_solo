@@ -74,10 +74,63 @@ const renderStationName = (station) => {
 // Votre code peut se trouver dans cette fonction. L'appel vers getPosition est
 // déjà implémenté. Si vous jetez un coup d'oeil à votre console vous verrez un objet
 // contenant votre position.
-const getDashboardInformation = () => {
-  getPosition().then((res) => {
-    console.log(res);
-  });
-};
 
-getDashboardInformation();
+const getDashboardInformation = () => {
+
+  getPosition()
+    .then((resultat) => {
+      // On récupère l'API et on la rend dynamique
+      const meteoURL = `https://api.open-meteo.com/v1/forecast?latitude=${resultat.lat}&longitude=${resultat.long}&daily=apparent_temperature_max,apparent_temperature_min&timezone=auto`;
+      const stationURL = `http://transport.opendata.ch/v1/locations?x=${resultat.lat}&y=${resultat.long}`;
+      // On récuprère toutes les données et on les mets chaqu'une dans un
+      // tableau en format JSON
+      // On le retourne
+      return Promise.all([
+        fetch(meteoURL)
+        .then((resultat) => resultat.json()),
+        fetch(stationURL)
+        .then((resultat) => resultat.json()),
+      ]);
+    })
+     // On reprend le retour plus haut (donc les 2 tableaux)
+     // et on les remet dans un tableau pour pouvoir manipuler les données. 
+    .then((weatherAndStations) => {
+      const [meteo, transport] = weatherAndStations;
+      // Appel de la fonction permettant d'afficher les informations de météo sur la page.
+      renderWeather( 
+        // [0] correspond au temps d'aujourd'hui !
+        meteo.daily.apparent_temperature_min[0],
+        meteo.daily.apparent_temperature_max[0]
+      );
+      // Permet d'afficher la GARE la plus proche
+      // Si on commente les 3 lignes ci-dessous et on décommente la 4e, il va afficher LA GARE OU L'ARRÊT LE PLUS PROCHE
+      const station = transport.stations.filter(
+        (station) => station.icon === "train"
+      )[0];
+      // const station = transport.stations[1];
+
+      if (station) {
+        renderStationName(station.name);
+      } else {
+        throw new Error("😅 Pas de station à proximité");
+      }
+      return fetch(
+        `https://transport.opendata.ch/v1/stationboard?station=${station.name}&limit=9`
+      ).then((res) => res.json());
+    })
+
+    .then((stationboard) => {
+      const cleanBoard = parseStationData(stationboard);
+      cleanBoard.departures.forEach((train) => {
+        renderTrain(train);
+      });
+    })
+    //
+    .catch((erreur) => renderStationName(erreur));
+
+  // .catch((erreur) => {
+  // console.log("Message d'erreur")
+  // })
+}
+
+getDashboardInformation()
