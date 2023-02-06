@@ -1,0 +1,26 @@
+{
+  "name": "challenge12_meteo-cff_solo",
+  "version": "1.0.0",
+  "description": "",
+  "browserslist": "> 0.25%, not dead",
+  
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sophie-aubert/cff-meteo_solo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sophie-aubert/cff-meteo_solo/issues"
+  },
+  "homepage": "https://github.com/sophie-aubert/cff-meteo_solo#readme",
+  "devDependencies": {
+    "parcel": "^2.8.3"
+  }
+}
